@@ -1,6 +1,10 @@
-# ALX Travel App
+# ALX Travel App 0x01
 
-A Django REST API for a travel booking application that allows users to list properties, make bookings, and leave reviews.
+A Django REST API for a travel booking application that allows users to list properties, make bookings, and leave reviews. This version includes comprehensive API endpoints with full CRUD operations.
+
+## Project Structure
+
+This is the `alx_travel_app_0x01` version, duplicated from `alx_travel_app_0x00` with enhanced API functionality.
 
 ## Features
 
@@ -11,61 +15,50 @@ A Django REST API for a travel booking application that allows users to list pro
 - **Advanced Filtering**: Filter listings by type, location, price range, and guest capacity
 - **Search Functionality**: Search listings by title, description, or location
 - **User Authentication**: JWT-based authentication for secure API access
-
-## Models
-
-### Listing
-- Properties available for booking (hotels, apartments, villas, etc.)
-- Includes pricing, capacity, location, and amenities information
-- Belongs to an owner (User)
-
-### Booking
-- Represents a reservation for a specific listing
-- Includes check-in/out dates, guest count, and booking status
-- Automatic total price calculation based on nightly rate
-- Status tracking (pending, confirmed, cancelled, completed)
-
-### Review
-- User reviews and ratings for listings
-- Linked to bookings for verified stays
-- Prevents listing owners from reviewing their own properties
-- One review per user per listing
-
-### ListingImage
-- Multiple images per listing with primary image designation
-- Image upload functionality with captions
+- **RESTful API**: Full CRUD operations via Django REST Framework ViewSets
+- **API Documentation**: Swagger/OpenAPI documentation
 
 ## API Endpoints
 
-### Listings
-- `GET /api/listings/` - List all active listings
+All endpoints are accessible under `/api/` and follow RESTful conventions:
+
+### Listings (`/api/listings/`)
+- `GET /api/listings/` - List all active listings with filtering and search
 - `POST /api/listings/` - Create a new listing (authenticated users)
 - `GET /api/listings/{id}/` - Get listing details
-- `PUT/PATCH /api/listings/{id}/` - Update listing (owner only)
+- `PUT /api/listings/{id}/` - Update entire listing (owner only)
+- `PATCH /api/listings/{id}/` - Partially update listing (owner only)
 - `DELETE /api/listings/{id}/` - Delete listing (owner only)
+
+#### Custom Actions:
 - `GET /api/listings/{id}/reviews/` - Get all reviews for a listing
 - `GET /api/listings/{id}/bookings/` - Get all bookings for a listing (owner only)
 
-### Bookings
+### Bookings (`/api/bookings/`)
 - `GET /api/bookings/` - List user's bookings (as guest or listing owner)
 - `POST /api/bookings/` - Create a new booking
 - `GET /api/bookings/{id}/` - Get booking details
-- `PUT/PATCH /api/bookings/{id}/` - Update booking
+- `PUT /api/bookings/{id}/` - Update entire booking
+- `PATCH /api/bookings/{id}/` - Partially update booking
 - `DELETE /api/bookings/{id}/` - Cancel booking
+
+#### Custom Actions:
 - `PATCH /api/bookings/{id}/update_status/` - Update booking status (owner only)
 
-### Reviews
-- `GET /api/reviews/` - List all reviews
+### Reviews (`/api/reviews/`)
+- `GET /api/reviews/` - List all reviews (filterable by listing)
 - `POST /api/reviews/` - Create a new review
 - `GET /api/reviews/{id}/` - Get review details
-- `PUT/PATCH /api/reviews/{id}/` - Update review (author only)
+- `PUT /api/reviews/{id}/` - Update entire review (author only)
+- `PATCH /api/reviews/{id}/` - Partially update review (author only)
 - `DELETE /api/reviews/{id}/` - Delete review (author only)
 
-### Listing Images
+### Listing Images (`/api/listing-images/`)
 - `GET /api/listing-images/` - List all images
 - `POST /api/listing-images/` - Upload new image
 - `GET /api/listing-images/{id}/` - Get image details
-- `PUT/PATCH /api/listing-images/{id}/` - Update image
+- `PUT /api/listing-images/{id}/` - Update image
+- `PATCH /api/listing-images/{id}/` - Partially update image
 - `DELETE /api/listing-images/{id}/` - Delete image
 
 ## Query Parameters
@@ -84,20 +77,27 @@ A Django REST API for a travel booking application that allows users to list pro
 ## Setup Instructions
 
 ### Prerequisites
--Ensure you have the latest Python version installed For me, it's 3.12.4
+- Python 3.8+ (tested with Python 3.12.4)
+- pip (Python package installer)
+- Git
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd alx_travel_app_0x00
+   cd alx_travel_app_0x01
    ```
 
 2. **Create virtual environment**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+   # On Linux/Mac:
+   source venv/bin/activate
+   
+   # On Windows:
+   venv\Scripts\activate
    ```
 
 3. **Install dependencies**
@@ -105,124 +105,189 @@ A Django REST API for a travel booking application that allows users to list pro
    pip install -r requirements.txt
    ```
 
-4. **Run migrations**
+4. **Configure settings**
+   Make sure your `alx_travel_app/settings.py` includes the listings app and DRF configuration:
+   ```python
+   INSTALLED_APPS = [
+       'django.contrib.admin',
+       'django.contrib.auth',
+       'django.contrib.contenttypes',
+       'django.contrib.sessions',
+       'django.contrib.messages',
+       'django.contrib.staticfiles',
+       'rest_framework',
+       'drf_yasg',  # For Swagger documentation
+       'listings',
+   ]
+   
+   REST_FRAMEWORK = {
+       'DEFAULT_PERMISSION_CLASSES': [
+           'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+       ],
+       'DEFAULT_AUTHENTICATION_CLASSES': [
+           'rest_framework.authentication.SessionAuthentication',
+           'rest_framework.authentication.BasicAuthentication',
+       ],
+   }
+   ```
+
+
+
+5. **Run migrations**
    ```bash
    python manage.py makemigrations
    python manage.py migrate
    ```
 
-5. **Create superuser**
+6. **Create superuser**
    ```bash
    python manage.py createsuperuser
    ```
 
-6. **Seed the database (optional)**
+7. **Seed the database (optional)**
    ```bash
    python manage.py seed
    ```
 
-7. **Run the development server**
+8. **Run the development server**
    ```bash
    python manage.py runserver
    ```
 
-## Database Seeding
+## Testing the API
 
-The project includes a management command to populate the database with sample data:
+### Using Postman
+
+1. **Import the following endpoints for testing:**
+
+   **GET Requests (No authentication required):**
+   - `GET http://localhost:8000/api/listings/`
+   - `GET http://localhost:8000/api/listings/1/`
+   - `GET http://localhost:8000/api/listings/1/reviews/`
+
+   **POST Requests (Authentication required):**
+   - `POST http://localhost:8000/api/listings/`
+   - `POST http://localhost:8000/api/bookings/`
+   - `POST http://localhost:8000/api/reviews/`
+
+   **PUT/PATCH Requests (Owner permissions required):**
+   - `PUT http://localhost:8000/api/listings/1/`
+   - `PATCH http://localhost:8000/api/bookings/1/`
+
+   **DELETE Requests (Owner permissions required):**
+   - `DELETE http://localhost:8000/api/listings/1/`
+   - `DELETE http://localhost:8000/api/bookings/1/`
+
+2. **Authentication Setup:**
+   - Use Django's session authentication or basic authentication
+   - Create a user via admin panel or registration endpoint
+   - Include authentication headers in requests
+
+3. **Sample POST Data:**
+
+   **Create Listing:**
+   ```json
+   {
+       "title": "Beautiful Beachfront Villa",
+       "description": "A stunning villa with ocean views",
+       "location": "Malibu, CA",
+       "price_per_night": 250.00,
+       "max_guests": 6,
+       "listing_type": "villa",
+       "amenities": ["WiFi", "Pool", "Ocean View"]
+   }
+   ```
+
+   **Create Booking:**
+   ```json
+   {
+       "listing": 1,
+       "check_in_date": "2024-07-15",
+       "check_out_date": "2024-07-20",
+       "number_of_guests": 4
+   }
+   ```
+
+   **Create Review:**
+   ```json
+   {
+       "listing": 1,
+       "rating": 5,
+       "comment": "Amazing property with great amenities!"
+   }
+   ```
+
+### Using curl
 
 ```bash
-# Basic seeding with default counts
-python manage.py seed
+# Get all listings
+curl -X GET http://localhost:8000/api/listings/
 
-# Custom counts
-python manage.py seed --listings 30 --bookings 100 --reviews 50
+# Get filtered listings
+curl -X GET "http://localhost:8000/api/listings/?location=beach&min_price=100"
 
-# Clear existing data before seeding
-python manage.py seed --clear
-
-# Help
-python manage.py seed --help
+# Create a listing (with authentication)
+curl -X POST http://localhost:8000/api/listings/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic <your-auth-token>" \
+  -d '{"title": "Test Listing", "description": "Test", "location": "Test City", "price_per_night": 100, "max_guests": 2, "listing_type": "apartment"}'
 ```
-
-### Seed Data Includes:
-- **Users**: Sample hosts and guests with different roles
-- **Listings**: Various property types in different locations
-- **Bookings**: Sample reservations with different statuses
-- **Reviews**: Ratings and comments for completed stays
 
 ## API Documentation
 
-When running the development server, you can access:
+When running the development server, access API documentation at:
 - **Swagger UI**: http://localhost:8000/swagger/
 - **ReDoc**: http://localhost:8000/redoc/
 
-## Project Structure
+## Key Features Implemented
 
-```
-alx_travel_app/
-├── alx_travel_app/
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── celery.py
-├── listings/
-│   ├── __init__.py
-│   ├── models.py          # Database models
-│   ├── serializers.py     # API serializers
-│   ├── views.py           # API views
-│   ├── urls.py            # URL routing
-│   ├── admin.py           # Django admin configuration
-│   ├── apps.py            # App configuration
-│   └── management/
-│       └── commands/
-│           └── seed.py    # Database seeding command
-├── media                 # Uploaded images
-├── manage.py
-└── README.md
-```
+### ViewSets with CRUD Operations
+- `ListingViewSet`: Full CRUD with custom filtering and search
+- `BookingViewSet`: CRUD with user-specific querysets and status updates
+- `ReviewViewSet`: CRUD with ownership validation
+- `ListingImageViewSet`: Image upload and management
 
-## Data Validation
+### Permission System
+- `IsAuthenticatedOrReadOnly`: Read access for all, write access for authenticated users
+- Owner-only operations: Users can only modify their own content
+- Custom permission checks in `perform_update` and `perform_destroy` methods
 
-The application includes comprehensive data validation:
+### Advanced Filtering
+- Query parameter-based filtering for listings
+- Search functionality across multiple fields
+- User-specific data filtering for bookings and reviews
 
-### Booking Validation
-- Check-in date must be before check-out date
-- Number of guests cannot exceed listing capacity
-- Automatic total price calculation
+### Data Validation
+- Automatic user assignment on creation
+- Business logic validation (e.g., booking dates, guest capacity)
+- Ownership verification for updates and deletions
 
-### Review Validation
-- Users cannot review their own listings
-- One review per user per listing
-- Rating must be between 1 and 5
+## Repository Information
 
-### Business Logic
-- Only listing owners can update booking status
-- Users can only modify their own bookings and reviews
-- Inactive listings are excluded from public listing views
-
-## Authentication
-
-The API uses Django's built-in authentication system. Most endpoints require authentication:
-- **Read-only access**: Available to anonymous users for listings
-- **Create/Update/Delete**: Requires authentication
-- **Ownership checks**: Users can only modify their own content
+- **GitHub repository**: `alx_travel_app_0x01`
+- **Directory**: `alx_travel_app`
+- **Key Files**: 
+  - `listings/views.py` - API ViewSets implementation
+  - `listings/urls.py` - URL routing configuration
+  - `README.md` - Project documentation
 
 ## Error Handling
 
-The API returns appropriate HTTP status codes and error messages:
+The API returns appropriate HTTP status codes:
+- `200 OK` - Successful GET, PUT, PATCH
+- `201 Created` - Successful POST
+- `204 No Content` - Successful DELETE
 - `400 Bad Request` - Validation errors
 - `401 Unauthorized` - Authentication required
 - `403 Forbidden` - Permission denied
 - `404 Not Found` - Resource not found
 - `500 Internal Server Error` - Server errors
 
-## Future Enhancements
+## Next Steps
 
-- Payment integration
-- Real-time notifications
-- Advanced search with filters
-- Booking calendar integration
-- Email notifications
-- Mobile app support
-- Multi-language support
+1. Test all endpoints thoroughly using Postman or similar tools
+2. Implement additional authentication methods (JWT, OAuth)
+3. Add pagination for large datasets
+4. Implement caching for improved performance
+5. Add comprehensive test suite
+6. Deploy to production environment
